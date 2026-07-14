@@ -5,14 +5,14 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "node scripts/setup-env.mjs && tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js",
-    "db:setup": "prisma migrate deploy && prisma db seed",
-    "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset --force",
+    "start": "node scripts/setup-env.mjs && node dist/index.js",
+    "db:setup": "node scripts/setup-env.mjs && prisma migrate deploy && prisma db seed",
+    "db:migrate": "node scripts/setup-env.mjs && prisma migrate dev",
+    "db:reset": "node scripts/setup-env.mjs && prisma migrate reset --force",
     "db:seed": "prisma db seed",
-    "postinstall": "prisma generate"
+    "postinstall": "node scripts/setup-env.mjs && prisma generate"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
