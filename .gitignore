@@ -1,0 +1,18 @@
+node_modules/
+dist/
+build/
+*.log
+.DS_Store
+
+# Environment
+.env
+.env.local
+
+# Database (SQLite)
+server/prisma/*.db
+server/prisma/*.db-journal
+server/prisma/dev.db*
+
+# Vite
+client/dist/
+.vite/

@@ -1,0 +1,177 @@
+// Griha data model — SQLite via Prisma.
+// Swap `provider = "postgresql"` and the DATABASE_URL to move to Postgres later.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Household {
+  id        String   @id @default(cuid())
+  name      String
+  joinCode  String   @unique // short code the staff tablet uses to join
+  createdAt DateTime @default(now())
+
+  owners        User[]
+  staff         Staff[]
+  tasks         Task[]
+  attendance    Attendance[]
+  shopping      ShoppingItem[]
+  documents     Document[]
+  notifications Notification[]
+  leaves        Leave[]
+  expenses      Expense[]
+  payrolls      Payroll[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  householdId String
+}
+
+model Staff {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  phone     String
+  language  String
+  salary    Int      @default(0)
+  color     String   @default("clay") // clay | green | blue
+  present   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  householdId String
+
+  tasks      Task[]
+  attendance Attendance[]
+  documents  Document[]
+  leaves     Leave[]
+  expenses   Expense[]
+  payrolls   Payroll[]
+}
+
+model Task {
+  id         String   @id @default(cuid())
+  title      String
+  due        String   @default("10:00") // HH:MM
+  recurring  String   @default("Once") // Once | Daily | Weekly | Mon, Wed, Fri | ...
+  done       Boolean  @default(false)
+  proofPhoto String? // reserved for future photo-proof uploads
+  createdAt  DateTime @default(now())
+
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  householdId String
+
+  assignee   Staff?  @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  assigneeId String?
+}
+
+model Attendance {
+  id       String  @id @default(cuid())
+  date     String // YYYY-MM-DD
+  checkIn  String? // HH:MM
+  checkOut String? // HH:MM
+
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  householdId String
+
+  staff   Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId String
+
+  @@unique([staffId, date])
+}
+
+model ShoppingItem {
+  id          String   @id @default(cuid())
+  item        String
+  qty         String
+  requestedBy String // display name (owner or staff)
+  state       String   @default("Pending") // Pending | Approved | Rejected | Purchased
+  createdAt   DateTime @default(now())
+
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  householdId String
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  type      String // Aadhaar | PAN | Police verification | Medical report
+  expiry    String? // YYYY-MM-DD
+  createdAt DateTime @default(now())
+
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  householdId String
+
+  staff   Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId String
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  text      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  householdId String
+}
+
+model Leave {
+  id        String   @id @default(cuid())
+  startDate String // YYYY-MM-DD
+  endDate   String // YYYY-MM-DD
+  reason    String
+  status    String   @default("Pending") // Pending | Approved | Declined
+  createdAt DateTime @default(now())
+
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  householdId String
+
+  staff   Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId String
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  amount      Int // in rupees
+  description String
+  category    String   @default("Groceries") // Groceries | Household | Utilities | Other
+  date        String // YYYY-MM-DD
+  createdAt   DateTime @default(now())
+
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  householdId String
+
+  staff   Staff?  @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  staffId String?
+}
+
+model Payroll {
+  id        String   @id @default(cuid())
+  month     String // YYYY-MM
+  base      Int
+  advance   Int      @default(0)
+  net       Int
+  status    String   @default("Scheduled") // Scheduled | Paid
+  paidAt    DateTime?
+  createdAt DateTime @default(now())
+
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  householdId String
+
+  staff   Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId String
+
+  @@unique([staffId, month])
+}
