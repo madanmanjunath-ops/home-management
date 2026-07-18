@@ -40,7 +40,7 @@ export function Login() {
         <h1>Run your household with calm and clarity.</h1>
         <p>
           Assign tasks, track attendance, approve shopping, manage salaries and leave — for your whole home
-          team, on one warm, simple screen.
+          team, on one calm, simple screen.
         </p>
         <ul className="auth-points">
           <li>👐 An owner app and a shared staff tablet</li>
