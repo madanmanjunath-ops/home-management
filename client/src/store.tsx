@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { api, setToken } from './api'
+import { DEMO, subscribeDemo } from './demo/mock'
 import type { HouseholdState, Session } from './types'
 
 const SESSION_KEY = 'griha.session'
@@ -80,6 +81,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     refresh().finally(() => {
       if (!cancelled) setLoading(false)
     })
+
+    // Hosted preview: no WebSocket — refresh whenever the in-browser mock changes.
+    if (DEMO) {
+      const unsub = subscribeDemo(() => refresh())
+      return () => {
+        cancelled = true
+        unsub()
+      }
+    }
 
     const connect = () => {
       const proto = location.protocol === 'https:' ? 'wss' : 'ws'

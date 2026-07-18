@@ -1,4 +1,5 @@
 import type { HouseholdState, Session } from './types'
+import { DEMO, demoHandle } from './demo/mock'
 
 let token: string | null = null
 
@@ -7,6 +8,11 @@ export function setToken(t: string | null) {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  // Hosted preview build: serve everything from the in-browser mock, no network.
+  if (DEMO) {
+    const body = options.body ? JSON.parse(options.body as string) : undefined
+    return demoHandle(path, options.method ?? 'GET', body) as Promise<T>
+  }
   const res = await fetch(`/api${path}`, {
     ...options,
     headers: {

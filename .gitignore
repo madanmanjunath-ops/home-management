@@ -15,4 +15,5 @@ server/prisma/dev.db*
 
 # Vite
 client/dist/
+client/dist-demo/
 .vite/
