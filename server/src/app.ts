@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import 'express-async-errors' // route rejections reach the error handler (clean 500, not a 502)
 import express from 'express'
 import cors from 'cors'
 
@@ -44,6 +45,19 @@ export function createApp() {
 
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err)
+    const name = (err as { name?: string })?.name ?? ''
+    const message = (err as { message?: string })?.message ?? ''
+    // Surface database-connection problems clearly (the most common deploy issue).
+    if (
+      name.includes('PrismaClientInitialization') ||
+      /database|ECONNREFUSED|ENOTFOUND|Can't reach|connection|password authentication/i.test(message)
+    ) {
+      res.status(500).json({
+        error:
+          'Database connection failed. Check DATABASE_URL / DIRECT_URL (special characters in the password must be URL-encoded) and that the setup SQL was run.',
+      })
+      return
+    }
     res.status(500).json({ error: 'Something went wrong' })
   })
 
