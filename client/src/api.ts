@@ -36,13 +36,15 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   })
   if (!res.ok) {
     let message = 'Request failed'
+    let detail: string | undefined
     try {
       const body = await res.json()
       message = body.error || message
+      detail = body.detail
     } catch {
       /* ignore */
     }
-    throw new ApiError(message, res.status)
+    throw new ApiError(message, res.status, detail)
   }
   const data = res.status === 204 ? (undefined as T) : ((await res.json()) as T)
   if (method !== 'GET') onChange?.()
@@ -51,9 +53,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export class ApiError extends Error {
   status: number
-  constructor(message: string, status: number) {
+  detail?: string
+  constructor(message: string, status: number, detail?: string) {
     super(message)
     this.status = status
+    this.detail = detail
   }
 }
 

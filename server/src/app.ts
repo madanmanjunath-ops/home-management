@@ -46,19 +46,18 @@ export function createApp() {
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err)
     const name = (err as { name?: string })?.name ?? ''
+    const code = (err as { code?: string })?.code ?? ''
     const message = (err as { message?: string })?.message ?? ''
-    // Surface database-connection problems clearly (the most common deploy issue).
-    if (
-      name.includes('PrismaClientInitialization') ||
-      /database|ECONNREFUSED|ENOTFOUND|Can't reach|connection|password authentication/i.test(message)
-    ) {
-      res.status(500).json({
-        error:
-          'Database connection failed. Check DATABASE_URL / DIRECT_URL (special characters in the password must be URL-encoded) and that the setup SQL was run.',
-      })
-      return
-    }
-    res.status(500).json({ error: 'Something went wrong' })
+    const isDbError =
+      name.includes('PrismaClient') ||
+      /database|ECONNREFUSED|ENOTFOUND|Can't reach|connection|password authentication|prepared statement|Tenant or user/i.test(
+        message
+      )
+    res.status(500).json({
+      error: isDbError ? 'Database error' : 'Server error',
+      // Included to help diagnose deploy issues; safe (no secrets).
+      detail: [name, code].filter(Boolean).join(' ') + (message ? ': ' + message : ''),
+    })
   })
 
   return app

@@ -33,16 +33,19 @@ interface TabletSaved {
 function describeAuthError(e: unknown): string {
   const status = (e as { status?: number }).status
   const message = (e as { message?: string }).message ?? 'Unknown error'
+  const detail = (e as { detail?: string }).detail
   if (status === 401) {
     return 'Signed in, but the server rejected the session. This usually means SUPABASE_JWT_SECRET (or SUPABASE_URL) in the hosting settings is wrong.'
   }
   if (status === 500) {
-    return 'Signed in, but the server hit an error — usually the database connection (check DATABASE_URL) or that the setup SQL was run.'
+    const base =
+      'Signed in, but the server hit an error — usually the database connection (check DATABASE_URL) or that the setup SQL was run.'
+    return detail ? `${base}\n\nDetails: ${detail}` : base
   }
   if (status === undefined) {
     return 'Signed in, but could not reach the server. Please check your connection and try again.'
   }
-  return `Signed in, but loading your home failed (${status}): ${message}`
+  return `Signed in, but loading your home failed (${status}): ${message}${detail ? `\n\nDetails: ${detail}` : ''}`
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {

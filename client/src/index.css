@@ -609,6 +609,8 @@ textarea:focus {
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
+  white-space: pre-line;
+  word-break: break-word;
 }
 .auth-info {
   background: #d3f0ea;
