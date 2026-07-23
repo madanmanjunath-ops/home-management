@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { jwtVerify, createRemoteJWKSet, type JWTPayload } from 'jose'
+import { prisma } from './db.js'
 
 const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET || ''
 const SUPABASE_URL = process.env.SUPABASE_URL || ''
@@ -109,7 +110,6 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   }
   req.supabaseUser = sb
 
-  const { prisma } = await import('./db.js')
   const user = await prisma.user.findUnique({ where: { authId: sb.authId } })
   req.auth = {
     role: 'owner',

@@ -46,7 +46,6 @@ export function createApp() {
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err)
     const name = (err as { name?: string })?.name ?? ''
-    const code = (err as { code?: string })?.code ?? ''
     const message = (err as { message?: string })?.message ?? ''
     const isDbError =
       name.includes('PrismaClient') ||
@@ -54,9 +53,9 @@ export function createApp() {
         message
       )
     res.status(500).json({
-      error: isDbError ? 'Database error' : 'Server error',
-      // Included to help diagnose deploy issues; safe (no secrets).
-      detail: [name, code].filter(Boolean).join(' ') + (message ? ': ' + message : ''),
+      error: isDbError
+        ? 'Database connection failed. Check DATABASE_URL / DIRECT_URL and that the setup SQL was run.'
+        : 'Something went wrong',
     })
   })
 

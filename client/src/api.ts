@@ -7,11 +7,15 @@ export function setToken(t: string | null) {
   token = t
 }
 
-// The store registers a callback here so any mutation immediately refreshes the
-// household snapshot (instead of waiting for the next poll). This is what makes
-// clicks — like toggling a task — feel instant.
-let onChange: (() => void) | null = null
-export function setOnChange(fn: (() => void) | null) {
+// The store registers a callback here. After any mutation it applies an optimistic
+// local update (so the UI reacts instantly) and refreshes in the background.
+export interface MutationInfo {
+  path: string
+  method: string
+  result: unknown
+}
+let onChange: ((info: MutationInfo) => void) | null = null
+export function setOnChange(fn: ((info: MutationInfo) => void) | null) {
   onChange = fn
 }
 
@@ -22,7 +26,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (DEMO) {
     const body = options.body ? JSON.parse(options.body as string) : undefined
     const result = (await demoHandle(path, method, body)) as T
-    if (method !== 'GET') onChange?.()
+    if (method !== 'GET') onChange?.({ path, method, result })
     return result
   }
 
@@ -47,7 +51,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     throw new ApiError(message, res.status, detail)
   }
   const data = res.status === 204 ? (undefined as T) : ((await res.json()) as T)
-  if (method !== 'GET') onChange?.()
+  if (method !== 'GET') onChange?.({ path, method, result: data })
   return data
 }
 

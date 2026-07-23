@@ -1,8 +1,83 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
-import { api, setToken, setOnChange } from './api'
+import { api, setToken, setOnChange, type MutationInfo } from './api'
 import { supabase } from './supabase'
 import { DEMO, subscribeDemo } from './demo/mock'
 import type { HouseholdState, Session } from './types'
+
+type Entity = { id: string }
+type Coll = keyof Pick<HouseholdState, 'tasks' | 'staff' | 'shopping' | 'documents' | 'leaves' | 'expenses'>
+
+// Apply a mutation to local state immediately so the UI reacts without waiting
+// for the network. A background refresh() reconciles anything this can't predict
+// (notifications, cascades, attendance, payroll), so it's always eventually
+// correct — this is purely for perceived speed.
+function applyOptimistic(state: HouseholdState, info: MutationInfo): HouseholdState {
+  const seg = info.path.split('/')[1] as Coll | string
+  const id = info.path.split('/')[2]
+  const result = info.result as Entity | null
+
+  const upsert = (arr: Entity[]) => {
+    if (!result?.id) return arr
+    const i = arr.findIndex((x) => x.id === result.id)
+    if (i === -1) return [...arr, result]
+    const copy = arr.slice()
+    copy[i] = result
+    return copy
+  }
+  const prepend = (arr: Entity[]) => (result?.id ? [result, ...arr] : arr)
+  const removeById = (arr: Entity[]) => arr.filter((x) => x.id !== id)
+
+  switch (seg) {
+    case 'tasks':
+      return {
+        ...state,
+        tasks:
+          info.method === 'DELETE'
+            ? (removeById(state.tasks) as HouseholdState['tasks'])
+            : (upsert(state.tasks) as HouseholdState['tasks']),
+      }
+    case 'shopping':
+      return {
+        ...state,
+        shopping:
+          info.method === 'DELETE'
+            ? (removeById(state.shopping) as HouseholdState['shopping'])
+            : (upsert(state.shopping) as HouseholdState['shopping']),
+      }
+    case 'leaves':
+      return {
+        ...state,
+        leaves:
+          info.method === 'DELETE'
+            ? (removeById(state.leaves) as HouseholdState['leaves'])
+            : (upsert(state.leaves) as HouseholdState['leaves']),
+      }
+    case 'staff':
+      // DELETE cascades (tasks/attendance) — let refresh handle that one.
+      return info.method === 'DELETE'
+        ? state
+        : { ...state, staff: upsert(state.staff) as HouseholdState['staff'] }
+    case 'documents':
+      return {
+        ...state,
+        documents:
+          info.method === 'DELETE'
+            ? (removeById(state.documents) as HouseholdState['documents'])
+            : (prepend(state.documents) as HouseholdState['documents']),
+      }
+    case 'expenses':
+      return {
+        ...state,
+        expenses:
+          info.method === 'DELETE'
+            ? (removeById(state.expenses) as HouseholdState['expenses'])
+            : (prepend(state.expenses) as HouseholdState['expenses']),
+      }
+    default:
+      // attendance, payroll, notifications, auth — handled by the background refresh.
+      return state
+  }
+}
 
 const TABLET_KEY = 'griha.tablet'
 const POLL_MS = 4000
@@ -65,9 +140,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Refresh instantly after any mutation (POST/PATCH/PUT/DELETE).
+  // After any mutation: update the UI optimistically (instant), then reconcile
+  // with the server in the background.
   useEffect(() => {
-    setOnChange(() => refresh())
+    setOnChange((info) => {
+      setState((prev) => (prev ? applyOptimistic(prev, info) : prev))
+      void refresh()
+    })
     return () => setOnChange(null)
   }, [refresh])
 
