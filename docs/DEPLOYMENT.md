@@ -35,19 +35,16 @@ sign-in is handled by Supabase Auth.
    For both connection strings, replace `[YOUR-PASSWORD]` with the database
    password from step 1.
 
-4. **Create the tables** (run the migration once). On your Mac, in the project
-   folder:
-   ```bash
-   # put your Supabase values into server/.env first:
-   #   DATABASE_URL="...6543...?pgbouncer=true"
-   #   DIRECT_URL="...5432..."
-   #   SUPABASE_JWT_SECRET="..."
-   #   TABLET_JWT_SECRET="<any long random string you make up>"
-   npm install
-   npm run db:setup      # creates all tables in Supabase
-   ```
-   You should see "migrations applied". (In Supabase → **Table Editor** you'll
-   now see the `Household`, `Staff`, `Task`, … tables.)
+4. **Create the tables** — no Mac needed. In Supabase:
+   - Left sidebar → **SQL Editor** → **New query**.
+   - Open [`docs/supabase-setup.sql`](supabase-setup.sql), copy the whole file,
+     paste it into the editor, and click **Run**.
+   - You should see "Success". In **Table Editor** you'll now see the
+     `Household`, `Staff`, `Task`, … tables.
+
+   > Prefer the command line instead? On your Mac, put the Supabase values in
+   > `server/.env` and run `npm install && npm run db:setup`. Do **one** of these,
+   > not both.
 
 ---
 
