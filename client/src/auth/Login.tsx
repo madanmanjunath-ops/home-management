@@ -4,7 +4,7 @@ import { useStore } from '../store'
 type Mode = 'login' | 'register' | 'tablet'
 
 export function Login() {
-  const { signInOwner, signUpOwner, joinTablet, authError } = useStore()
+  const { signInOwner, signUpOwner, joinTablet, authError, authDiag } = useStore()
   const [mode, setMode] = useState<Mode>('login')
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
@@ -107,6 +107,7 @@ export function Login() {
 
           {error && <div className="auth-error">{error}</div>}
           {!error && authError && <div className="auth-error">{authError}</div>}
+          {authDiag && <pre className="auth-diag">{JSON.stringify(authDiag, null, 2)}</pre>}
           {info && <div className="auth-info">{info}</div>}
 
           <button className="button" disabled={busy} type="submit">

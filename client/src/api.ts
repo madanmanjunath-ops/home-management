@@ -64,6 +64,7 @@ export const api = {
       household?: Session['household']
       needsBootstrap?: boolean
     }>('/auth/me'),
+  diag: () => request<Record<string, unknown>>('/auth/diag'),
 
   // --- Snapshot ---
   state: () => request<HouseholdState>('/state'),

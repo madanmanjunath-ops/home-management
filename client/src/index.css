@@ -618,6 +618,17 @@ textarea:focus {
   font-size: 13px;
   font-weight: 600;
 }
+.auth-diag {
+  background: #0f2e28;
+  color: #cdeee6;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre;
+  margin: 0;
+}
 .auth-switch {
   font-size: 13px;
   color: var(--muted);

@@ -2,10 +2,15 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { customAlphabet } from 'nanoid'
 import { prisma } from '../db.js'
-import { requireAuth, signTabletToken } from '../auth.js'
+import { requireAuth, signTabletToken, diagnoseToken } from '../auth.js'
 import { populateHousehold } from '../sampleData.js'
 
 export const authRouter = Router()
+
+// Temporary support diagnostics — reports how token verification is failing.
+authRouter.get('/diag', async (req, res) => {
+  res.json(await diagnoseToken(req))
+})
 
 // Human-friendly join codes: no ambiguous chars (0/O, 1/I).
 const makeJoinCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6)

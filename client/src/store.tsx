@@ -13,6 +13,7 @@ interface Store {
   loading: boolean
   needsBootstrap: boolean
   authError: string | null
+  authDiag: Record<string, unknown> | null
   signInOwner: (email: string, password: string) => Promise<void>
   signUpOwner: (email: string, password: string) => Promise<{ needsEmailConfirm: boolean }>
   bootstrap: (name: string, householdName: string) => Promise<void>
@@ -51,6 +52,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [needsBootstrap, setNeedsBootstrap] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [authDiag, setAuthDiag] = useState<Record<string, unknown> | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const refresh = useCallback(async () => {
@@ -123,8 +125,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           await refresh()
         }
         setAuthError(null)
+        setAuthDiag(null)
       } catch (e) {
-        if (!cancelled) setAuthError(describeAuthError(e))
+        if (!cancelled) {
+          setAuthError(describeAuthError(e))
+          // Pull server-side diagnostics so we can see exactly why verification failed.
+          api
+            .diag()
+            .then((d) => !cancelled && setAuthDiag(d))
+            .catch(() => {})
+        }
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -234,6 +244,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         loading,
         needsBootstrap,
         authError,
+        authDiag,
         signInOwner,
         signUpOwner,
         bootstrap,
