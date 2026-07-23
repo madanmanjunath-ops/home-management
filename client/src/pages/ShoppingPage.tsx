@@ -54,10 +54,16 @@ export function ShoppingPage() {
                   <div className="actions">
                     {i.state === 'Pending' && (
                       <>
-                        <button className="text-button" onClick={() => api.setShoppingState(i.id, 'Approved')}>
+                        <button
+                          className="text-button"
+                          onClick={() => api.setShoppingState(i.id, 'Approved')}
+                        >
                           Approve
                         </button>
-                        <button className="text-button danger" onClick={() => api.setShoppingState(i.id, 'Rejected')}>
+                        <button
+                          className="text-button danger"
+                          onClick={() => api.setShoppingState(i.id, 'Rejected')}
+                        >
                           Reject
                         </button>
                       </>
@@ -105,12 +111,22 @@ function ShoppingModal({ defaultBy, onClose }: { defaultBy: string; onClose: () 
   const names = [defaultBy, ...data.staff.map((s) => s.name)]
 
   return (
-    <Modal title="Add shopping item" onClose={onClose} onSubmit={submit} submitLabel={busy ? 'Saving…' : 'Save'}>
+    <Modal
+      title="Add shopping item"
+      onClose={onClose}
+      onSubmit={submit}
+      submitLabel={busy ? 'Saving…' : 'Save'}
+    >
       <Field label="Item">
         <input value={form.item} onChange={(e) => set('item', e.target.value)} required />
       </Field>
       <Field label="Quantity">
-        <input value={form.qty} onChange={(e) => set('qty', e.target.value)} placeholder="e.g. 2 kg" required />
+        <input
+          value={form.qty}
+          onChange={(e) => set('qty', e.target.value)}
+          placeholder="e.g. 2 kg"
+          required
+        />
       </Field>
       <Field label="Requested by" full>
         <select value={form.requestedBy} onChange={(e) => set('requestedBy', e.target.value)}>

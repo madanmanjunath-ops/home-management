@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { prisma } from '../db.js'
-import { requireAuth } from '../auth.js'
+import { requireAuth, requireHousehold } from '../auth.js'
 
 export const stateRouter = Router()
 
@@ -9,7 +9,7 @@ function today(): string {
 }
 
 // One snapshot of the whole household — the client's single source of truth.
-stateRouter.get('/', requireAuth, async (req, res) => {
+stateRouter.get('/', requireAuth, requireHousehold, async (req, res) => {
   const householdId = req.auth!.householdId
 
   const [staff, tasks, attendance, shopping, documents, notifications, leaves, expenses, payroll] =

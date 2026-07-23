@@ -1,13 +1,13 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../db.js'
-import { requireAuth, requireOwner } from '../auth.js'
+import { requireAuth, requireOwner, requireHousehold } from '../auth.js'
 import { broadcast } from '../realtime.js'
 import { notify } from '../notify.js'
 
 export const shoppingRouter = Router()
 
-shoppingRouter.use(requireAuth)
+shoppingRouter.use(requireAuth, requireHousehold)
 
 const createSchema = z.object({
   item: z.string().min(1),

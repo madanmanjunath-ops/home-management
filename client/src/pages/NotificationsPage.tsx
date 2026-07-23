@@ -13,7 +13,11 @@ export function NotificationsPage() {
         title="Notifications"
         subtitle="A quiet feed of what needs your attention."
         action={
-          <button className="button secondary" onClick={() => api.readAllNotifications()} disabled={!hasUnread}>
+          <button
+            className="button secondary"
+            onClick={() => api.readAllNotifications()}
+            disabled={!hasUnread}
+          >
             Mark all read
           </button>
         }

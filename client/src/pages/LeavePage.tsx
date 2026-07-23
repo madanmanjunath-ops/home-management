@@ -54,7 +54,10 @@ export function LeavePage() {
                     <button className="text-button" onClick={() => api.setLeaveStatus(l.id, 'Approved')}>
                       Approve
                     </button>
-                    <button className="text-button danger" onClick={() => api.setLeaveStatus(l.id, 'Declined')}>
+                    <button
+                      className="text-button danger"
+                      onClick={() => api.setLeaveStatus(l.id, 'Declined')}
+                    >
                       Decline
                     </button>
                   </>
@@ -107,13 +110,23 @@ function LeaveModal({ onClose }: { onClose: () => void }) {
         </select>
       </Field>
       <Field label="From">
-        <input type="date" value={form.startDate} onChange={(e) => set('startDate', e.target.value)} required />
+        <input
+          type="date"
+          value={form.startDate}
+          onChange={(e) => set('startDate', e.target.value)}
+          required
+        />
       </Field>
       <Field label="To">
         <input type="date" value={form.endDate} onChange={(e) => set('endDate', e.target.value)} required />
       </Field>
       <Field label="Reason" full>
-        <input value={form.reason} onChange={(e) => set('reason', e.target.value)} placeholder="e.g. Family function" required />
+        <input
+          value={form.reason}
+          onChange={(e) => set('reason', e.target.value)}
+          placeholder="e.g. Family function"
+          required
+        />
       </Field>
     </Modal>
   )

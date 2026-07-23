@@ -63,7 +63,10 @@ export function StaffPage() {
                 <td>{s.phone}</td>
                 <td>{rupees(s.salary)}</td>
                 <td>
-                  <StatusPill label={s.present ? 'Present' : 'Not checked in'} tone={s.present ? 'green' : 'late'} />
+                  <StatusPill
+                    label={s.present ? 'Present' : 'Not checked in'}
+                    tone={s.present ? 'green' : 'late'}
+                  />
                 </td>
                 <td>
                   <button className="text-button" onClick={() => setEditing(s)}>
@@ -132,7 +135,12 @@ function StaffModal({ staff, onClose }: { staff: Staff | null; onClose: () => vo
         </select>
       </Field>
       <Field label="Phone number">
-        <input value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="98765 43210" required />
+        <input
+          value={form.phone}
+          onChange={(e) => set('phone', e.target.value)}
+          placeholder="98765 43210"
+          required
+        />
       </Field>
       <Field label="Language">
         <select value={form.language} onChange={(e) => set('language', e.target.value)}>

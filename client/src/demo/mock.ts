@@ -45,17 +45,72 @@ interface Store {
 const S: Store = seed()
 
 function seed(): Store {
-  const shanta = { id: 'st_shanta', name: 'Shanta', role: 'Housekeeper', phone: '98450 12345', language: 'Kannada', color: 'clay', salary: 18000, present: true }
-  const ravi = { id: 'st_ravi', name: 'Ravi', role: 'Cook', phone: '98451 55432', language: 'Hindi', color: 'green', salary: 22000, present: true }
-  const lakshmi = { id: 'st_lakshmi', name: 'Lakshmi', role: 'Nanny', phone: '99021 88419', language: 'Tamil', color: 'blue', salary: 20000, present: false }
+  const shanta = {
+    id: 'st_shanta',
+    name: 'Shanta',
+    role: 'Housekeeper',
+    phone: '98450 12345',
+    language: 'Kannada',
+    color: 'clay',
+    salary: 18000,
+    present: true,
+  }
+  const ravi = {
+    id: 'st_ravi',
+    name: 'Ravi',
+    role: 'Cook',
+    phone: '98451 55432',
+    language: 'Hindi',
+    color: 'green',
+    salary: 22000,
+    present: true,
+  }
+  const lakshmi = {
+    id: 'st_lakshmi',
+    name: 'Lakshmi',
+    role: 'Nanny',
+    phone: '99021 88419',
+    language: 'Tamil',
+    color: 'blue',
+    salary: 20000,
+    present: false,
+  }
   const month = monthISO()
   return {
     staff: [shanta, ravi, lakshmi],
     tasks: [
-      { id: id('tk_'), title: 'Clean the living room', assigneeId: shanta.id, due: '09:30', recurring: 'Daily', done: true },
-      { id: id('tk_'), title: 'Prepare lunch', assigneeId: ravi.id, due: '12:30', recurring: 'Daily', done: false },
-      { id: id('tk_'), title: 'Water balcony plants', assigneeId: shanta.id, due: '16:00', recurring: 'Mon, Wed, Fri', done: false },
-      { id: id('tk_'), title: 'Organise children’s books', assigneeId: lakshmi.id, due: '17:00', recurring: 'Once', done: false },
+      {
+        id: id('tk_'),
+        title: 'Clean the living room',
+        assigneeId: shanta.id,
+        due: '09:30',
+        recurring: 'Daily',
+        done: true,
+      },
+      {
+        id: id('tk_'),
+        title: 'Prepare lunch',
+        assigneeId: ravi.id,
+        due: '12:30',
+        recurring: 'Daily',
+        done: false,
+      },
+      {
+        id: id('tk_'),
+        title: 'Water balcony plants',
+        assigneeId: shanta.id,
+        due: '16:00',
+        recurring: 'Mon, Wed, Fri',
+        done: false,
+      },
+      {
+        id: id('tk_'),
+        title: 'Organise children’s books',
+        assigneeId: lakshmi.id,
+        due: '17:00',
+        recurring: 'Once',
+        done: false,
+      },
     ],
     attendance: [
       { id: id('at_'), staffId: shanta.id, date: todayISO(), checkIn: '09:00', checkOut: null },
@@ -68,17 +123,56 @@ function seed(): Store {
     ],
     documents: [],
     notifications: [
-      { id: id('nt_'), text: 'Ravi completed “Clean kitchen counters”', read: false, createdAt: new Date(Date.now() - 20 * 60000).toISOString() },
-      { id: id('nt_'), text: 'Lakshmi has not checked in today', read: false, createdAt: new Date(Date.now() - 60 * 60000).toISOString() },
+      {
+        id: id('nt_'),
+        text: 'Ravi completed “Clean kitchen counters”',
+        read: false,
+        createdAt: new Date(Date.now() - 20 * 60000).toISOString(),
+      },
+      {
+        id: id('nt_'),
+        text: 'Lakshmi has not checked in today',
+        read: false,
+        createdAt: new Date(Date.now() - 60 * 60000).toISOString(),
+      },
     ],
     leaves: [
-      { id: id('lv_'), staffId: lakshmi.id, startDate: addDays(2), endDate: addDays(4), reason: 'Family function', status: 'Pending' },
+      {
+        id: id('lv_'),
+        staffId: lakshmi.id,
+        startDate: addDays(2),
+        endDate: addDays(4),
+        reason: 'Family function',
+        status: 'Pending',
+      },
     ],
     expenses: [
-      { id: id('ex_'), amount: 850, description: 'Vegetables & fruit', category: 'Groceries', date: addDays(-1), staffId: ravi.id },
-      { id: id('ex_'), amount: 1200, description: 'Cleaning supplies', category: 'Household', date: addDays(-3), staffId: shanta.id },
+      {
+        id: id('ex_'),
+        amount: 850,
+        description: 'Vegetables & fruit',
+        category: 'Groceries',
+        date: addDays(-1),
+        staffId: ravi.id,
+      },
+      {
+        id: id('ex_'),
+        amount: 1200,
+        description: 'Cleaning supplies',
+        category: 'Household',
+        date: addDays(-3),
+        staffId: shanta.id,
+      },
     ],
-    payroll: [shanta, ravi, lakshmi].map((s) => ({ id: id('pr_'), staffId: s.id, month, base: s.salary, advance: 0, net: s.salary, status: 'Scheduled' })),
+    payroll: [shanta, ravi, lakshmi].map((s) => ({
+      id: id('pr_'),
+      staffId: s.id,
+      month,
+      base: s.salary,
+      advance: 0,
+      net: s.salary,
+      status: 'Scheduled',
+    })),
   }
 }
 
@@ -166,9 +260,16 @@ export async function demoHandle(path: string, method: string, body?: any): Prom
     const s = S.staff.find((x) => x.id === body.staffId)
     if (s) {
       s.present = true
-      let a = S.attendance.find((x) => x.staffId === s.id && x.date === todayISO())
+      const a = S.attendance.find((x) => x.staffId === s.id && x.date === todayISO())
       if (a) a.checkIn = nowHM()
-      else S.attendance.push({ id: id('at_'), staffId: s.id, date: todayISO(), checkIn: nowHM(), checkOut: null })
+      else
+        S.attendance.push({
+          id: id('at_'),
+          staffId: s.id,
+          date: todayISO(),
+          checkIn: nowHM(),
+          checkOut: null,
+        })
       notify(`${s.name} checked in`)
     }
   } else if (path === '/attendance/check-out') {
@@ -179,7 +280,13 @@ export async function demoHandle(path: string, method: string, body?: any): Prom
   } else if (path === '/attendance/check-all') {
     S.staff.forEach((s) => {
       if (!S.attendance.find((a) => a.staffId === s.id && a.date === todayISO())) {
-        S.attendance.push({ id: id('at_'), staffId: s.id, date: todayISO(), checkIn: nowHM(), checkOut: null })
+        S.attendance.push({
+          id: id('at_'),
+          staffId: s.id,
+          date: todayISO(),
+          checkIn: nowHM(),
+          checkOut: null,
+        })
         s.present = true
       }
     })
@@ -250,7 +357,15 @@ export async function demoHandle(path: string, method: string, body?: any): Prom
       let row = S.payroll.find((p) => p.staffId === s.id && p.month === month)
       const advance = row?.advance ?? 0
       if (!row) {
-        row = { id: id('pr_'), staffId: s.id, month, base: s.salary, advance, net: s.salary - advance, status: 'Paid' }
+        row = {
+          id: id('pr_'),
+          staffId: s.id,
+          month,
+          base: s.salary,
+          advance,
+          net: s.salary - advance,
+          status: 'Paid',
+        }
         S.payroll.push(row)
       } else {
         row.status = 'Paid'
@@ -266,7 +381,15 @@ export async function demoHandle(path: string, method: string, body?: any): Prom
       let row = S.payroll.find((p) => p.staffId === s.id && p.month === month)
       const advance = Number(body.advance)
       if (!row) {
-        row = { id: id('pr_'), staffId: s.id, month, base: s.salary, advance, net: Math.max(0, s.salary - advance), status: 'Scheduled' }
+        row = {
+          id: id('pr_'),
+          staffId: s.id,
+          month,
+          base: s.salary,
+          advance,
+          net: Math.max(0, s.salary - advance),
+          status: 'Scheduled',
+        }
         S.payroll.push(row)
       } else {
         row.advance = advance

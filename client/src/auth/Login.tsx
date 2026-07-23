@@ -4,26 +4,33 @@ import { useStore } from '../store'
 type Mode = 'login' | 'register' | 'tablet'
 
 export function Login() {
-  const { loginOwner, registerOwner, joinTablet } = useStore()
+  const { signInOwner, signUpOwner, joinTablet } = useStore()
   const [mode, setMode] = useState<Mode>('login')
   const [error, setError] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  // form fields
-  const [email, setEmail] = useState('owner@griha.app')
-  const [password, setPassword] = useState('griha123')
-  const [name, setName] = useState('')
-  const [householdName, setHouseholdName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [joinCode, setJoinCode] = useState('')
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setInfo(null)
     setBusy(true)
     try {
-      if (mode === 'login') await loginOwner(email, password)
-      else if (mode === 'register') await registerOwner({ email, password, name, householdName })
-      else await joinTablet(joinCode)
+      if (mode === 'login') {
+        await signInOwner(email, password)
+      } else if (mode === 'register') {
+        const { needsEmailConfirm } = await signUpOwner(email, password)
+        if (needsEmailConfirm) {
+          setInfo('Check your email to confirm your account, then sign in.')
+          setMode('login')
+        }
+      } else {
+        await joinTablet(joinCode)
+      }
     } catch (err) {
       setError((err as Error).message)
     } finally {
@@ -44,7 +51,7 @@ export function Login() {
         </p>
         <ul className="auth-points">
           <li>👐 An owner app and a shared staff tablet</li>
-          <li>⚡ Live updates the moment anything changes</li>
+          <li>⚡ Updates the moment anything changes</li>
           <li>🔒 Your household, private to you</li>
         </ul>
       </div>
@@ -77,27 +84,10 @@ export function Login() {
             </>
           ) : (
             <>
-              <h2>{mode === 'login' ? 'Welcome back' : 'Create your home'}</h2>
+              <h2>{mode === 'login' ? 'Welcome back' : 'Create your account'}</h2>
               <p className="subtitle">
                 {mode === 'login' ? 'Sign in to your household.' : 'Set up Griha for your household.'}
               </p>
-              {mode === 'register' && (
-                <>
-                  <label>
-                    Your name
-                    <input value={name} onChange={(e) => setName(e.target.value)} required />
-                  </label>
-                  <label>
-                    Household name
-                    <input
-                      value={householdName}
-                      onChange={(e) => setHouseholdName(e.target.value)}
-                      placeholder="e.g. Sharma Home"
-                      required
-                    />
-                  </label>
-                </>
-              )}
               <label>
                 Email
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -116,9 +106,16 @@ export function Login() {
           )}
 
           {error && <div className="auth-error">{error}</div>}
+          {info && <div className="auth-info">{info}</div>}
 
           <button className="button" disabled={busy} type="submit">
-            {busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : mode === 'register' ? 'Create home' : 'Join home'}
+            {busy
+              ? 'Please wait…'
+              : mode === 'login'
+                ? 'Sign in'
+                : mode === 'register'
+                  ? 'Create account'
+                  : 'Join home'}
           </button>
 
           {mode !== 'tablet' && (
@@ -127,7 +124,7 @@ export function Login() {
                 <>
                   New here?{' '}
                   <button type="button" className="text-button" onClick={() => setMode('register')}>
-                    Create a household
+                    Create an account
                   </button>
                 </>
               ) : (
@@ -138,12 +135,6 @@ export function Login() {
                   </button>
                 </>
               )}
-            </div>
-          )}
-
-          {mode === 'login' && (
-            <div className="auth-demo">
-              Demo · <code>owner@griha.app</code> / <code>griha123</code> · tablet code <code>HOME24</code>
             </div>
           )}
         </form>

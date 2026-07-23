@@ -36,9 +36,7 @@ export function SalaryPage() {
         }
       />
 
-      <Notice>
-        Payments are tracked locally. Connect a payment provider before issuing real payouts.
-      </Notice>
+      <Notice>Payments are tracked locally. Connect a payment provider before issuing real payouts.</Notice>
 
       <Card>
         <div className="header-row">
@@ -83,7 +81,13 @@ export function SalaryPage() {
         {rows.length === 0 && <div className="empty">Add staff to run payroll.</div>}
       </Card>
 
-      {advanceFor && <AdvanceModal staff={advanceFor} current={data.payroll.find((p) => p.staffId === advanceFor.id)?.advance ?? 0} onClose={() => setAdvanceFor(null)} />}
+      {advanceFor && (
+        <AdvanceModal
+          staff={advanceFor}
+          current={data.payroll.find((p) => p.staffId === advanceFor.id)?.advance ?? 0}
+          onClose={() => setAdvanceFor(null)}
+        />
+      )}
     </>
   )
 }
@@ -101,9 +105,20 @@ function AdvanceModal({ staff, current, onClose }: { staff: Staff; current: numb
     }
   }
   return (
-    <Modal title={`Advance for ${staff.name}`} onClose={onClose} onSubmit={submit} submitLabel={busy ? 'Saving…' : 'Save'}>
+    <Modal
+      title={`Advance for ${staff.name}`}
+      onClose={onClose}
+      onSubmit={submit}
+      submitLabel={busy ? 'Saving…' : 'Save'}
+    >
       <Field label="Advance amount (₹)" full>
-        <input type="number" min={0} max={staff.salary} value={advance} onChange={(e) => setAdvance(Number(e.target.value))} />
+        <input
+          type="number"
+          min={0}
+          max={staff.salary}
+          value={advance}
+          onChange={(e) => setAdvance(Number(e.target.value))}
+        />
       </Field>
       <div className="full small">Net payable becomes {rupees(Math.max(0, staff.salary - advance))}.</div>
     </Modal>

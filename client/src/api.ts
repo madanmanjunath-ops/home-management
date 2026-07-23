@@ -45,22 +45,25 @@ export class ApiError extends Error {
 
 export const api = {
   // --- Auth ---
-  login: (email: string, password: string) =>
-    request<Omit<Session, 'token'> & { token: string }>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
-  register: (payload: { email: string; password: string; name: string; householdName: string }) =>
-    request<Omit<Session, 'token'> & { token: string }>('/auth/register', {
+  // Owner: create the household after Supabase sign-up (idempotent).
+  bootstrap: (payload: { name: string; householdName: string }) =>
+    request<{ role: 'owner'; user: Session['user']; household: Session['household'] }>('/auth/bootstrap', {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+  // Staff tablet: exchange a join code for a scoped token.
   tablet: (joinCode: string) =>
-    request<Omit<Session, 'token' | 'user'> & { token: string }>('/auth/tablet', {
+    request<{ role: 'tablet'; token: string; household: Session['household'] }>('/auth/tablet', {
       method: 'POST',
       body: JSON.stringify({ joinCode }),
     }),
-  me: () => request<{ role: string; user: Session['user']; household: Session['household'] }>('/auth/me'),
+  me: () =>
+    request<{
+      role: string
+      user?: Session['user']
+      household?: Session['household']
+      needsBootstrap?: boolean
+    }>('/auth/me'),
 
   // --- Snapshot ---
   state: () => request<HouseholdState>('/state'),

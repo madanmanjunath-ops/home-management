@@ -2,12 +2,17 @@
 // Swap `provider = "postgresql"` and the DATABASE_URL to move to Postgres later.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // native: local dev. rhel-openssl-*: AWS Lambda (Netlify Functions) runtimes.
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Pooled connection (Supabase pgBouncer, port 6543) for serverless.
+  url       = env("DATABASE_URL")
+  // Direct connection (port 5432) used by migrations.
+  directUrl = env("DIRECT_URL")
 }
 
 model Household {
@@ -28,12 +33,14 @@ model Household {
   payrolls      Payroll[]
 }
 
+// Owner profile, linked 1:1 to a Supabase Auth user (auth.users.id).
+// Passwords/sessions are managed by Supabase Auth, not stored here.
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  createdAt    DateTime @default(now())
+  id        String   @id @default(cuid())
+  authId    String   @unique // Supabase auth user id (JWT `sub`)
+  email     String   @unique
+  name      String
+  createdAt DateTime @default(now())
 
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
   householdId String

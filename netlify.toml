@@ -1,0 +1,28 @@
+# Netlify build & routing for Griha.
+# Frontend is served as a static SPA; the Express API runs as a serverless function.
+
+[build]
+  command = "npm run build"
+  publish = "client/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+  # Prisma's client + query-engine binary must be shipped, not inlined by esbuild.
+  external_node_modules = ["@prisma/client", ".prisma/client"]
+  included_files = ["server/prisma/schema.prisma", "node_modules/.prisma/client/**"]
+
+# API → serverless function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# SPA fallback → single-page app router handles the rest
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

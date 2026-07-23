@@ -10,7 +10,7 @@ const CATEGORIES: ExpenseCategory[] = ['Groceries', 'Household', 'Utilities', 'O
 export function ExpensesPage() {
   const data = useData()
   const [adding, setAdding] = useState(false)
-  const staffName = (id: string | null) => (id ? data.staff.find((s) => s.id === id)?.name ?? '—' : 'Owner')
+  const staffName = (id: string | null) => (id ? (data.staff.find((s) => s.id === id)?.name ?? '—') : 'Owner')
 
   const month = todayISO().slice(0, 7)
   const monthTotal = data.expenses
@@ -33,7 +33,9 @@ export function ExpensesPage() {
         <Card className="metric">
           <div className="label">Spent this month</div>
           <div className="value">{rupees(monthTotal)}</div>
-          <div className="hint">{data.expenses.filter((e) => e.date.slice(0, 7) === month).length} entries</div>
+          <div className="hint">
+            {data.expenses.filter((e) => e.date.slice(0, 7) === month).length} entries
+          </div>
         </Card>
         <Card className="metric">
           <div className="label">All-time logged</div>
@@ -111,13 +113,24 @@ function ExpenseModal({ onClose }: { onClose: () => void }) {
   return (
     <Modal title="Log expense" onClose={onClose} onSubmit={submit} submitLabel={busy ? 'Saving…' : 'Save'}>
       <Field label="Amount (₹)">
-        <input type="number" min={0} value={form.amount} onChange={(e) => set('amount', Number(e.target.value))} required />
+        <input
+          type="number"
+          min={0}
+          value={form.amount}
+          onChange={(e) => set('amount', Number(e.target.value))}
+          required
+        />
       </Field>
       <Field label="Date">
         <input type="date" value={form.date} onChange={(e) => set('date', e.target.value)} />
       </Field>
       <Field label="Description" full>
-        <input value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="e.g. Vegetables" required />
+        <input
+          value={form.description}
+          onChange={(e) => set('description', e.target.value)}
+          placeholder="e.g. Vegetables"
+          required
+        />
       </Field>
       <Field label="Category">
         <select value={form.category} onChange={(e) => set('category', e.target.value)}>

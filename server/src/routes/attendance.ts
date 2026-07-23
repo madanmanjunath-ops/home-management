@@ -1,13 +1,13 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../db.js'
-import { requireAuth } from '../auth.js'
+import { requireAuth, requireHousehold } from '../auth.js'
 import { broadcast } from '../realtime.js'
 import { notify } from '../notify.js'
 
 export const attendanceRouter = Router()
 
-attendanceRouter.use(requireAuth)
+attendanceRouter.use(requireAuth, requireHousehold)
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)

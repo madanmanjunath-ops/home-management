@@ -98,15 +98,7 @@ export function Modal({
   )
 }
 
-export function Field({
-  label,
-  full,
-  children,
-}: {
-  label: string
-  full?: boolean
-  children: ReactNode
-}) {
+export function Field({ label, full, children }: { label: string; full?: boolean; children: ReactNode }) {
   return (
     <label className={full ? 'full' : ''}>
       {label}

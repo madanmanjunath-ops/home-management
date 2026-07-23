@@ -16,7 +16,7 @@ const NAV: [string, string, string][] = [
 ]
 
 export function OwnerLayout() {
-  const { session, logout, connected } = useStore()
+  const { session, logout } = useStore()
   const data = useData()
   const navigate = useNavigate()
   const unread = data.notifications.filter((n) => !n.read).length
@@ -34,7 +34,6 @@ export function OwnerLayout() {
             <button className="active">Owner app</button>
             <button onClick={() => navigate('/tablet')}>Staff tablet</button>
           </div>
-          <span className={`dot ${connected ? 'live' : ''}`} title={connected ? 'Live' : 'Reconnecting…'} />
           <button className="text-button" onClick={logout}>
             Sign out
           </button>
@@ -43,7 +42,12 @@ export function OwnerLayout() {
       <div className="layout">
         <nav className="nav">
           {NAV.map(([path, icon, label]) => (
-            <NavLink key={path} to={path} end={path === '/'} className={({ isActive }) => (isActive ? 'active' : '')}>
+            <NavLink
+              key={path}
+              to={path}
+              end={path === '/'}
+              className={({ isActive }) => (isActive ? 'active' : '')}
+            >
               <span className="icon">{icon}</span>
               {label}
               {path === '/notifications' && unread > 0 ? ' •' : ''}

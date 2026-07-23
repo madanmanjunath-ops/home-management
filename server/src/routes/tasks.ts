@@ -1,13 +1,13 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../db.js'
-import { requireAuth, requireOwner } from '../auth.js'
+import { requireAuth, requireOwner, requireHousehold } from '../auth.js'
 import { broadcast } from '../realtime.js'
 import { notify } from '../notify.js'
 
 export const tasksRouter = Router()
 
-tasksRouter.use(requireAuth)
+tasksRouter.use(requireAuth, requireHousehold)
 
 const createSchema = z.object({
   title: z.string().min(1),
@@ -25,9 +25,7 @@ tasksRouter.post('/', requireOwner, async (req, res) => {
   }
   const householdId = req.auth!.householdId
   const task = await prisma.task.create({ data: { ...parsed.data, householdId } })
-  const assignee = task.assigneeId
-    ? await prisma.staff.findUnique({ where: { id: task.assigneeId } })
-    : null
+  const assignee = task.assigneeId ? await prisma.staff.findUnique({ where: { id: task.assigneeId } }) : null
   await notify(householdId, `New task assigned${assignee ? ` to ${assignee.name}` : ''}: “${task.title}”`)
   broadcast(householdId)
   res.json(task)

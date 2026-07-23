@@ -10,9 +10,7 @@ export function TasksPage() {
   const [adding, setAdding] = useState(false)
   const [filter, setFilter] = useState<'all' | 'todo' | 'done'>('all')
 
-  const tasks = data.tasks.filter((t) =>
-    filter === 'all' ? true : filter === 'todo' ? !t.done : t.done
-  )
+  const tasks = data.tasks.filter((t) => (filter === 'all' ? true : filter === 'todo' ? !t.done : t.done))
 
   return (
     <>

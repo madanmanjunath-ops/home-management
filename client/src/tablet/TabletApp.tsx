@@ -138,7 +138,12 @@ function StaffShoppingModal({ staff, onClose }: { staff: Staff; onClose: () => v
         <input value={form.item} onChange={(e) => set('item', e.target.value)} required />
       </Field>
       <Field label="Quantity">
-        <input value={form.qty} onChange={(e) => set('qty', e.target.value)} placeholder="e.g. 2 kg" required />
+        <input
+          value={form.qty}
+          onChange={(e) => set('qty', e.target.value)}
+          placeholder="e.g. 2 kg"
+          required
+        />
       </Field>
     </Modal>
   )

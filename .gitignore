@@ -17,3 +17,6 @@ server/prisma/dev.db*
 client/dist/
 client/dist-demo/
 .vite/
+
+# Netlify
+.netlify/

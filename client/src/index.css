@@ -24,7 +24,9 @@ body {
   margin: 0;
   background: var(--sand);
   color: var(--ink);
-  font: 14px 'Noto Sans', sans-serif;
+  font:
+    14px 'Noto Sans',
+    sans-serif;
 }
 h1,
 h2,
@@ -72,11 +74,15 @@ code {
   gap: 12px;
 }
 .brand {
-  font: 800 32px/1 'Baloo 2', sans-serif;
+  font:
+    800 32px/1 'Baloo 2',
+    sans-serif;
   color: var(--clay);
 }
 .brand small {
-  font: 600 12px 'Noto Sans', sans-serif;
+  font:
+    600 12px 'Noto Sans',
+    sans-serif;
   color: var(--muted);
   margin-left: 8px;
 }
@@ -103,7 +109,9 @@ code {
   background: transparent;
   color: var(--ink);
   cursor: pointer;
-  font: 600 13px 'Noto Sans', sans-serif;
+  font:
+    600 13px 'Noto Sans',
+    sans-serif;
   padding: 8px 12px;
   border-radius: 99px;
   text-decoration: none;
@@ -173,7 +181,9 @@ main {
   background: var(--clay);
   color: #fff;
   box-shadow: 0 2px 8px rgba(13, 148, 136, 0.22);
-  transition: background 0.15s, transform 0.05s;
+  transition:
+    background 0.15s,
+    transform 0.05s;
 }
 .button:hover {
   background: var(--clay-dark);
@@ -228,7 +238,9 @@ main {
   font-size: 12px;
 }
 .metric .value {
-  font: 700 27px/1.1 'Baloo 2', sans-serif;
+  font:
+    700 27px/1.1 'Baloo 2',
+    sans-serif;
   margin: 4px 0;
 }
 .metric .hint {
@@ -591,8 +603,16 @@ textarea:focus {
   gap: 6px;
 }
 .auth-error {
-  background: #f7dfdc;
+  background: #fce0e2;
   color: #b23b47;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.auth-info {
+  background: #d3f0ea;
+  color: #0b7d72;
   padding: 10px 12px;
   border-radius: 10px;
   font-size: 13px;
@@ -619,7 +639,9 @@ textarea:focus {
   gap: 8px;
 }
 .boot-brand {
-  font: 800 44px 'Baloo 2', sans-serif;
+  font:
+    800 44px 'Baloo 2',
+    sans-serif;
   color: var(--clay);
 }
 

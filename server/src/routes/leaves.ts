@@ -1,13 +1,13 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../db.js'
-import { requireAuth, requireOwner } from '../auth.js'
+import { requireAuth, requireOwner, requireHousehold } from '../auth.js'
 import { broadcast } from '../realtime.js'
 import { notify } from '../notify.js'
 
 export const leavesRouter = Router()
 
-leavesRouter.use(requireAuth)
+leavesRouter.use(requireAuth, requireHousehold)
 
 const createSchema = z.object({
   staffId: z.string().min(1),

@@ -54,7 +54,10 @@ export function AttendancePage() {
                     {leave ? (
                       <StatusPill label="On leave" tone="neutral" />
                     ) : record ? (
-                      <StatusPill label={record.checkOut ? 'Left' : 'Present'} tone={record.checkOut ? 'neutral' : 'green'} />
+                      <StatusPill
+                        label={record.checkOut ? 'Left' : 'Present'}
+                        tone={record.checkOut ? 'neutral' : 'green'}
+                      />
                     ) : (
                       <StatusPill label="Not checked in" tone="late" />
                     )}
