@@ -2,15 +2,9 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { customAlphabet } from 'nanoid'
 import { prisma } from '../db.js'
-import { requireAuth, signTabletToken, diagnoseToken } from '../auth.js'
-import { populateHousehold } from '../sampleData.js'
+import { requireAuth, signTabletToken } from '../auth.js'
 
 export const authRouter = Router()
-
-// Temporary support diagnostics — reports how token verification is failing.
-authRouter.get('/diag', async (req, res) => {
-  res.json(await diagnoseToken(req))
-})
 
 // Human-friendly join codes: no ambiguous chars (0/O, 1/I).
 const makeJoinCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6)
@@ -81,7 +75,7 @@ authRouter.post('/bootstrap', requireAuth, async (req, res) => {
   const user = await prisma.user.create({
     data: { authId: sb.authId, email: sb.email, name: parsed.data.name, householdId: household.id },
   })
-  await populateHousehold(household.id)
+  // New households start empty — the owner adds their own staff, tasks, etc.
 
   res.json({
     role: 'owner',

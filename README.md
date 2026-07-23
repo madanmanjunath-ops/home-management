@@ -47,8 +47,8 @@ npm run db:setup     # apply migrations to your Supabase database
 npm run dev          # API on :4000, web on :5173
 ```
 
-Open **http://localhost:5173**, create an account, and set up your household (a little sample data is
-added so it isn't empty). Share the join code (shown in the owner header) with the staff tablet.
+Open **http://localhost:5173**, create an account, and set up your household. Add your staff and
+tasks, then share the join code (shown in the owner header) with the staff tablet.
 
 > **Just want to look?** A no-setup interactive demo (in-browser mock, no Supabase needed) is built
 > with `npm run build:demo --workspace client`.
@@ -76,7 +76,6 @@ server/            Express + Prisma (the API)
     app.ts         Express app (shared by local dev + serverless)
     auth.ts        verifies Supabase tokens (owner) + tablet join tokens
     routes/        one router per module
-    sampleData.ts  seeds a new household
 netlify/functions/ serverless entrypoint (wraps app.ts)
 ```
 
@@ -87,14 +86,14 @@ for a scoped token.
 
 ## Scripts
 
-| Command             | What it does                                     |
-| ------------------- | ------------------------------------------------ |
-| `npm run dev`       | Run API + web app together (hot reload)          |
-| `npm run db:setup`  | Apply database migrations to Supabase            |
-| `npm run build`     | Build both workspaces (what Netlify runs)        |
-| `npm run typecheck` | Type-check both workspaces                        |
-| `npm run lint`      | ESLint                                            |
-| `npm run format`    | Format with Prettier                             |
+| Command             | What it does                              |
+| ------------------- | ----------------------------------------- |
+| `npm run dev`       | Run API + web app together (hot reload)   |
+| `npm run db:setup`  | Apply database migrations to Supabase     |
+| `npm run build`     | Build both workspaces (what Netlify runs) |
+| `npm run typecheck` | Type-check both workspaces                |
+| `npm run lint`      | ESLint                                    |
+| `npm run format`    | Format with Prettier                      |
 
 ## Phase-2 upgrades (deliberately out of scope for now)
 

@@ -7,12 +7,25 @@ export function setToken(t: string | null) {
   token = t
 }
 
+// The store registers a callback here so any mutation immediately refreshes the
+// household snapshot (instead of waiting for the next poll). This is what makes
+// clicks — like toggling a task — feel instant.
+let onChange: (() => void) | null = null
+export function setOnChange(fn: (() => void) | null) {
+  onChange = fn
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const method = (options.method ?? 'GET').toUpperCase()
+
   // Hosted preview build: serve everything from the in-browser mock, no network.
   if (DEMO) {
     const body = options.body ? JSON.parse(options.body as string) : undefined
-    return demoHandle(path, options.method ?? 'GET', body) as Promise<T>
+    const result = (await demoHandle(path, method, body)) as T
+    if (method !== 'GET') onChange?.()
+    return result
   }
+
   const res = await fetch(`/api${path}`, {
     ...options,
     headers: {
@@ -31,8 +44,9 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     }
     throw new ApiError(message, res.status)
   }
-  if (res.status === 204) return undefined as T
-  return res.json() as Promise<T>
+  const data = res.status === 204 ? (undefined as T) : ((await res.json()) as T)
+  if (method !== 'GET') onChange?.()
+  return data
 }
 
 export class ApiError extends Error {
@@ -64,7 +78,6 @@ export const api = {
       household?: Session['household']
       needsBootstrap?: boolean
     }>('/auth/me'),
-  diag: () => request<Record<string, unknown>>('/auth/diag'),
 
   // --- Snapshot ---
   state: () => request<HouseholdState>('/state'),

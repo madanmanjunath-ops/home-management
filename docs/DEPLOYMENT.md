@@ -24,13 +24,13 @@ sign-in is handled by Supabase Auth.
 
 3. **Collect these 5 values** (keep them in a scratch note):
 
-   | Value | Where in Supabase |
-   |---|---|
-   | `VITE_SUPABASE_URL` | Settings → **API** → **Project URL** |
-   | `VITE_SUPABASE_ANON_KEY` | Settings → **API** → **Project API keys** → `anon` `public` |
-   | `SUPABASE_JWT_SECRET` | Settings → **API** → **JWT Settings** → **JWT Secret** |
-   | `DATABASE_URL` | Settings → **Database** → **Connection string** → **Connection pooling** tab → URI (port **6543**). Add `?pgbouncer=true` at the end. |
-   | `DIRECT_URL` | Settings → **Database** → **Connection string** → **URI** (direct, port **5432**) |
+   | Value                    | Where in Supabase                                                                                                                     |
+   | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+   | `VITE_SUPABASE_URL`      | Settings → **API** → **Project URL**                                                                                                  |
+   | `VITE_SUPABASE_ANON_KEY` | Settings → **API** → **Project API keys** → `anon` `public`                                                                           |
+   | `SUPABASE_JWT_SECRET`    | Settings → **API** → **JWT Settings** → **JWT Secret**                                                                                |
+   | `DATABASE_URL`           | Settings → **Database** → **Connection string** → **Connection pooling** tab → URI (port **6543**). Add `?pgbouncer=true` at the end. |
+   | `DIRECT_URL`             | Settings → **Database** → **Connection string** → **URI** (direct, port **5432**)                                                     |
 
    For both connection strings, replace `[YOUR-PASSWORD]` with the database
    password from step 1.
@@ -65,15 +65,15 @@ First, get the code onto your `main` branch (Netlify deploys from GitHub):
 4. Before the first deploy, click **Add environment variables** (or Site settings
    → **Environment variables** afterward) and add **all six**:
 
-   | Key | Value |
-   |---|---|
-   | `DATABASE_URL` | the pooled 6543 URL (`?pgbouncer=true`) |
-   | `DIRECT_URL` | the direct 5432 URL |
-   | `SUPABASE_URL` | your project URL, e.g. `https://xxxxx.supabase.co` (same value as `VITE_SUPABASE_URL`) |
-   | `SUPABASE_JWT_SECRET` | from Supabase (Project Settings → API → JWT Settings) |
-   | `TABLET_JWT_SECRET` | the same long random string you chose in Part 1 |
-   | `VITE_SUPABASE_URL` | from Supabase |
-   | `VITE_SUPABASE_ANON_KEY` | from Supabase |
+   | Key                      | Value                                                                                  |
+   | ------------------------ | -------------------------------------------------------------------------------------- |
+   | `DATABASE_URL`           | the pooled 6543 URL (`?pgbouncer=true`)                                                |
+   | `DIRECT_URL`             | the direct 5432 URL                                                                    |
+   | `SUPABASE_URL`           | your project URL, e.g. `https://xxxxx.supabase.co` (same value as `VITE_SUPABASE_URL`) |
+   | `SUPABASE_JWT_SECRET`    | from Supabase (Project Settings → API → JWT Settings)                                  |
+   | `TABLET_JWT_SECRET`      | the same long random string you chose in Part 1                                        |
+   | `VITE_SUPABASE_URL`      | from Supabase                                                                          |
+   | `VITE_SUPABASE_ANON_KEY` | from Supabase                                                                          |
 
    > `SUPABASE_URL` lets the API verify logins whether your project uses the
    > legacy JWT secret **or** the newer asymmetric signing keys — set it and

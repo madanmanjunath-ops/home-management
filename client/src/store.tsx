@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
-import { api, setToken } from './api'
+import { api, setToken, setOnChange } from './api'
 import { supabase } from './supabase'
 import { DEMO, subscribeDemo } from './demo/mock'
 import type { HouseholdState, Session } from './types'
@@ -13,7 +13,6 @@ interface Store {
   loading: boolean
   needsBootstrap: boolean
   authError: string | null
-  authDiag: Record<string, unknown> | null
   signInOwner: (email: string, password: string) => Promise<void>
   signUpOwner: (email: string, password: string) => Promise<{ needsEmailConfirm: boolean }>
   bootstrap: (name: string, householdName: string) => Promise<void>
@@ -52,7 +51,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [needsBootstrap, setNeedsBootstrap] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
-  const [authDiag, setAuthDiag] = useState<Record<string, unknown> | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const refresh = useCallback(async () => {
@@ -63,6 +61,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (status === 409) setNeedsBootstrap(true)
     }
   }, [])
+
+  // Refresh instantly after any mutation (POST/PATCH/PUT/DELETE).
+  useEffect(() => {
+    setOnChange(() => refresh())
+    return () => setOnChange(null)
+  }, [refresh])
 
   // ---------- Session bootstrapping ----------
   useEffect(() => {
@@ -125,16 +129,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           await refresh()
         }
         setAuthError(null)
-        setAuthDiag(null)
       } catch (e) {
-        if (!cancelled) {
-          setAuthError(describeAuthError(e))
-          // Pull server-side diagnostics so we can see exactly why verification failed.
-          api
-            .diag()
-            .then((d) => !cancelled && setAuthDiag(d))
-            .catch(() => {})
-        }
+        if (!cancelled) setAuthError(describeAuthError(e))
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -244,7 +240,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         loading,
         needsBootstrap,
         authError,
-        authDiag,
         signInOwner,
         signUpOwner,
         bootstrap,

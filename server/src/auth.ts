@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-import { jwtVerify, createRemoteJWKSet, decodeProtectedHeader, decodeJwt, type JWTPayload } from 'jose'
+import { jwtVerify, createRemoteJWKSet, type JWTPayload } from 'jose'
 
 const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET || ''
 const SUPABASE_URL = process.env.SUPABASE_URL || ''
@@ -84,79 +84,6 @@ export async function verifySupabaseToken(token: string): Promise<{ authId: stri
 function readBearer(req: Request): string | null {
   const header = req.headers.authorization
   return header?.startsWith('Bearer ') ? header.slice(7) : null
-}
-
-/**
- * Non-sensitive diagnostics for a caller's token (temporary support tool).
- * Reports which verification paths were attempted and why they failed — never
- * returns secrets or the token itself.
- */
-export async function diagnoseToken(req: Request) {
-  const token = readBearer(req)
-  const report: Record<string, unknown> = {
-    env: {
-      hasSecret: !!SUPABASE_JWT_SECRET,
-      hasSupabaseUrl: !!SUPABASE_URL,
-      supabaseUrlHost: SUPABASE_URL ? new URL(SUPABASE_URL).host : null,
-    },
-  }
-  if (!token) {
-    report.token = { present: false }
-    return report
-  }
-
-  let header: Record<string, unknown> = {}
-  let payload: JWTPayload = {}
-  try {
-    header = decodeProtectedHeader(token) as Record<string, unknown>
-  } catch {
-    /* ignore */
-  }
-  try {
-    payload = decodeJwt(token)
-  } catch {
-    /* ignore */
-  }
-  report.token = { present: true, alg: header.alg, kid: header.kid, iss: payload.iss, hasSub: !!payload.sub }
-
-  // HS256 attempt
-  if (SUPABASE_JWT_SECRET) {
-    try {
-      await jwtVerify(token, new TextEncoder().encode(SUPABASE_JWT_SECRET))
-      report.hs256 = 'ok'
-    } catch (e) {
-      report.hs256 = 'error: ' + (e as Error).message
-    }
-  } else {
-    report.hs256 = 'no-secret-set'
-  }
-
-  // JWKS (asymmetric) attempt
-  const jwksUrl = SUPABASE_URL ? `${SUPABASE_URL}/auth/v1/.well-known/jwks.json` : null
-  const jwksReport: Record<string, unknown> = { url: jwksUrl }
-  if (jwksUrl) {
-    try {
-      const r = await fetch(jwksUrl)
-      jwksReport.fetchStatus = r.status
-      const body = (await r.json().catch(() => null)) as { keys?: unknown[] } | null
-      jwksReport.keyCount = body?.keys?.length ?? 0
-    } catch (e) {
-      jwksReport.fetchError = (e as Error).message
-    }
-    const set = getJwks()
-    if (set) {
-      try {
-        await jwtVerify(token, set)
-        jwksReport.verify = 'ok'
-      } catch (e) {
-        jwksReport.verify = 'error: ' + (e as Error).message
-      }
-    }
-  } else {
-    jwksReport.note = 'SUPABASE_URL not set'
-  }
-  report.jwks = jwksReport
-  return report
 }
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
