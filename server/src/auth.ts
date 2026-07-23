@@ -1,7 +1,9 @@
 import type { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
+import { jwtVerify, createRemoteJWKSet, type JWTPayload } from 'jose'
 
 const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET || ''
+const SUPABASE_URL = process.env.SUPABASE_URL || ''
 const TABLET_JWT_SECRET = process.env.TABLET_JWT_SECRET || 'griha-dev-tablet-secret'
 
 export type Role = 'owner' | 'tablet'
@@ -18,7 +20,6 @@ declare global {
   namespace Express {
     interface Request {
       auth?: AuthContext
-      // A verified Supabase identity that may not yet have a household profile.
       supabaseUser?: { authId: string; email: string }
     }
   }
@@ -39,16 +40,45 @@ function verifyTabletToken(token: string): { householdId: string } | null {
   }
 }
 
-// --- Supabase Auth token (owner) ---
-export function verifySupabaseToken(token: string): { authId: string; email: string } | null {
-  if (!SUPABASE_JWT_SECRET) return null
-  try {
-    const d = jwt.verify(token, SUPABASE_JWT_SECRET) as jwt.JwtPayload
-    if (!d.sub) return null
-    return { authId: d.sub as string, email: (d.email as string) || '' }
-  } catch {
-    return null
+// --- Supabase Auth token verification ---
+// Supabase projects may sign auth JWTs either with the legacy shared secret
+// (HS256) or with asymmetric signing keys (ES256/RS256). We support both.
+let jwks: ReturnType<typeof createRemoteJWKSet> | null = null
+function getJwks() {
+  if (!jwks && SUPABASE_URL) {
+    jwks = createRemoteJWKSet(new URL(`${SUPABASE_URL}/auth/v1/.well-known/jwks.json`))
   }
+  return jwks
+}
+
+function fromPayload(payload: JWTPayload): { authId: string; email: string } | null {
+  if (!payload.sub) return null
+  return { authId: payload.sub, email: (payload.email as string) || '' }
+}
+
+export async function verifySupabaseToken(token: string): Promise<{ authId: string; email: string } | null> {
+  // 1) Legacy HS256 shared secret.
+  if (SUPABASE_JWT_SECRET) {
+    try {
+      const { payload } = await jwtVerify(token, new TextEncoder().encode(SUPABASE_JWT_SECRET))
+      const r = fromPayload(payload)
+      if (r) return r
+    } catch {
+      /* fall through to JWKS */
+    }
+  }
+  // 2) Asymmetric keys via the project's JWKS.
+  const set = getJwks()
+  if (set) {
+    try {
+      const { payload } = await jwtVerify(token, set)
+      const r = fromPayload(payload)
+      if (r) return r
+    } catch {
+      /* invalid */
+    }
+  }
+  return null
 }
 
 function readBearer(req: Request): string | null {
@@ -56,10 +86,6 @@ function readBearer(req: Request): string | null {
   return header?.startsWith('Bearer ') ? header.slice(7) : null
 }
 
-/**
- * Resolve the caller. Accepts either a staff-tablet token or a Supabase owner
- * token. For owners we look up the household profile lazily (see resolveOwner).
- */
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const token = readBearer(req)
   if (!token) {
@@ -76,21 +102,20 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   }
 
   // Otherwise treat it as a Supabase owner token.
-  const sb = verifySupabaseToken(token)
+  const sb = await verifySupabaseToken(token)
   if (!sb) {
     res.status(401).json({ error: 'Session expired — please sign in again' })
     return
   }
   req.supabaseUser = sb
 
-  // Lazily import to avoid a cycle; resolve the owner's household profile.
   const { prisma } = await import('./db.js')
   const user = await prisma.user.findUnique({ where: { authId: sb.authId } })
-  if (!user) {
-    // Authenticated with Supabase but no household yet — only /auth routes allow this.
-    req.auth = { role: 'owner', householdId: '', authId: sb.authId, email: sb.email }
-  } else {
-    req.auth = { role: 'owner', householdId: user.householdId, authId: sb.authId, email: sb.email }
+  req.auth = {
+    role: 'owner',
+    householdId: user?.householdId ?? '',
+    authId: sb.authId,
+    email: sb.email,
   }
   next()
 }

@@ -69,10 +69,15 @@ First, get the code onto your `main` branch (Netlify deploys from GitHub):
    |---|---|
    | `DATABASE_URL` | the pooled 6543 URL (`?pgbouncer=true`) |
    | `DIRECT_URL` | the direct 5432 URL |
-   | `SUPABASE_JWT_SECRET` | from Supabase |
+   | `SUPABASE_URL` | your project URL, e.g. `https://xxxxx.supabase.co` (same value as `VITE_SUPABASE_URL`) |
+   | `SUPABASE_JWT_SECRET` | from Supabase (Project Settings → API → JWT Settings) |
    | `TABLET_JWT_SECRET` | the same long random string you chose in Part 1 |
    | `VITE_SUPABASE_URL` | from Supabase |
    | `VITE_SUPABASE_ANON_KEY` | from Supabase |
+
+   > `SUPABASE_URL` lets the API verify logins whether your project uses the
+   > legacy JWT secret **or** the newer asymmetric signing keys — set it and
+   > you're covered either way.
 
 5. **Deploy site.** Wait for the build (~2–3 min). Netlify gives you a URL like
    `https://your-site.netlify.app`.

@@ -12,6 +12,7 @@ interface Store {
   state: HouseholdState | null
   loading: boolean
   needsBootstrap: boolean
+  authError: string | null
   signInOwner: (email: string, password: string) => Promise<void>
   signUpOwner: (email: string, password: string) => Promise<{ needsEmailConfirm: boolean }>
   bootstrap: (name: string, householdName: string) => Promise<void>
@@ -27,11 +28,29 @@ interface TabletSaved {
   household: Session['household']
 }
 
+// Turn a failed post-login API call into a message that hints at the cause
+// (the status code tells us which server setting is likely wrong).
+function describeAuthError(e: unknown): string {
+  const status = (e as { status?: number }).status
+  const message = (e as { message?: string }).message ?? 'Unknown error'
+  if (status === 401) {
+    return 'Signed in, but the server rejected the session. This usually means SUPABASE_JWT_SECRET (or SUPABASE_URL) in the hosting settings is wrong.'
+  }
+  if (status === 500) {
+    return 'Signed in, but the server hit an error — usually the database connection (check DATABASE_URL) or that the setup SQL was run.'
+  }
+  if (status === undefined) {
+    return 'Signed in, but could not reach the server. Please check your connection and try again.'
+  }
+  return `Signed in, but loading your home failed (${status}): ${message}`
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [state, setState] = useState<HouseholdState | null>(null)
   const [loading, setLoading] = useState(true)
   const [needsBootstrap, setNeedsBootstrap] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const refresh = useCallback(async () => {
@@ -103,6 +122,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           setSession({ token: accessToken, role: 'owner', user: me.user, household: me.household })
           await refresh()
         }
+        setAuthError(null)
+      } catch (e) {
+        if (!cancelled) setAuthError(describeAuthError(e))
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -153,7 +175,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // ---------- Actions ----------
   const signInOwner = useCallback(async (email: string, password: string) => {
     const sb = supabase
-    if (!sb) throw new Error('Sign-in is not configured yet.')
+    if (!sb) throw new Error('Sign-in is not configured yet — the app was built without Supabase keys.')
+    setAuthError(null)
     const { error } = await sb.auth.signInWithPassword({ email, password })
     if (error) throw new Error(error.message)
   }, [])
@@ -210,6 +233,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         state,
         loading,
         needsBootstrap,
+        authError,
         signInOwner,
         signUpOwner,
         bootstrap,
